@@ -1,2 +1,8 @@
-ATTGGGAAGAC
-ATTGGGAAGACTCTCGGGCC
+CCCCTAAATG
+CCCCTAAATGGGGCGACACT
+
+GCCCGCCC
+GCCCGCCCCCTGATGGGGGCGACACTCCGCCATG
+gtggcctactaccgcggtcttgacgtgtctgtcatcccgg
+
+gcccgccccc tgatgggggc gacactccgc catgaatcac

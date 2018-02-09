@@ -1,5 +1,7 @@
 import math
 import random
+import time
+import copy
 from spectrum import *
 
 
@@ -47,11 +49,11 @@ def set_available(id1, id2, graph):
     return graph
 
 
-def add_olig(i, count, spectrum, sequence):
+def add_olig(i, count, spectrum, sequence2):
     tmp = spectrum[i].start.series[0:count]
     for j in range(len(tmp)):
-        sequence.append(tmp[j])
-    return sequence
+        sequence2.append(tmp[j])
+    return sequence2
 
 
 def add_series_end(i, j, spectrum, series):
@@ -65,10 +67,10 @@ def add_series_end(i, j, spectrum, series):
 def quality(seq):
     global sequence
     good = 0
-    for i in range(n):
+    for i in range(len(seq)):
         if sequence[i] == seq[i]:
             good += 1
-    return good / n * 100
+    return good / len(seq) * 100
 
 
 count2 = 0
@@ -80,16 +82,16 @@ def check_if_ok(spectrum, seq):
     global count2
 
     for o in range(len(spectrum)):
-        if spectrum[o].start.times_used < spectrum[o].start.min and spectrum[o].start.times_used > spectrum[o].start.max:
+        if spectrum[o].start.times_used < spectrum[o].start.min: # spectrum[o].start.times_used > spectrum[o].start.max:
             return False
 
     new_seq = ''.join(seq)
 
-    if len(new_seq) != n:
+    if len(seq) > n:
         new_seq_correct = False
     else:
         new_seq_correct = True
-
+    """
     for s in range(len(graph)):
         occur.clear()
         id1 = new_seq.find(graph[s].start.series)
@@ -101,17 +103,21 @@ def check_if_ok(spectrum, seq):
                 occur.append(id1)
 
         if graph[s].start.min == 0:
-            if len(occur) > 0 and len(occur) < 2:
+            if len(occur) > 0 and len(occur) < 1:
                 new_seq_correct = False
         elif graph[s].start.min == 1:
-            if len(occur) > 1 and len(occur) < 4:
+            if len(occur) > 1 and len(occur) < 3:
                 new_seq_correct = False
-        elif graph[s].start.min == 3:
-            if len(occur) > 3:
+        elif graph[s].start.min == 2:
+            if len(occur) > 2 and len(occur) < 5:
+                new_seq_correct = False
+        elif graph[s].start.min == 4:
+            if len(occur) > 4:
                 new_seq_correct = False
         elif graph[s].start.min == -1:
-            if len(occur) >= 4:
+            if len(occur) >= 5:
                 new_seq_correct = False
+    """
 
     if new_seq_correct == True:
         count2 += 1
@@ -128,17 +134,17 @@ def check_if_ok(spectrum, seq):
 
 def ant(graph, first):
     firstCount = True
-    ants = 50
-    iterac = 30
+    ants = 20
+    iterac = 60
     par = 20
     divide = 90
-    pheromoneFactor = 20
+    pheromoneFactor = 30
     minpheromone = 10
     choosenRoads = []
     pheroToAdd = []
     okSeq = []
-    sequence = []
-
+    sequence2 = []
+    print(str(n))
     for i in range(iterac):
         for j in range(ants):
             # use first
@@ -161,7 +167,9 @@ def ant(graph, first):
             while minOli == False and roads == True and tooLong == False:
                 if firstCount:
                     # choose road
+
                     for k in range(len(graph[actual].edges)):
+                        # print(str(k) + " " + str(len(graph[actual].edges)))
                         if graph[graph[actual].edges[k].end.id].start.times_used < graph[graph[actual].edges[k].end.id].start.max:
                             if graph[actual].edges[k].rest[0] == 0:
                                 choosenRoads.append(graph[actual].edges[k].end.id)
@@ -186,10 +194,20 @@ def ant(graph, first):
                         # print("ran : " + str(ran) + " , " + str(len(choosenRoads)))
                         ran -= 1
                     next = choosenRoads[ran]
-                    for k in range(len(graph[actual].edges)):
-                        if next == graph[actual].edges[k].end.id:
-                            next2 = k
+                    found = False
+                    find_next = 0
+                    for hej in range(len(graph[actual].edges)):
+                        if next == graph[actual].edges[hej].end.id and found == False:
+                            found = True
+                            find_next = hej
                             break
+                            #print(str(hej))
+                    """
+                    for index, item in enumerate(graph[actual].edges):
+                        if next == item.end.id:
+                            next2 = index
+                            #break
+                    """
                     graph[next].start.times_used += 1
                     idx = get_complementary(graph, next)
                     graph[idx].start.times_used += 1
@@ -203,15 +221,16 @@ def ant(graph, first):
                                 graph[idx].start.times_used += 1
                                 graph = set_available(idx, graph[next].edges[k].end.id, graph)
                     # add to seq
-                    sequence = add_olig(actual, graph[actual].edges[next2].move[0], graph, sequence)
-                    if len(sequence) > n:
+
+                    sequence2 = add_olig(actual, graph[actual].edges[find_next].move[0], graph, sequence2)
+                    if len(sequence2) > n:
                         tooLong = True
                     else:
                         # remeber and leave pheromone
                         pheromone = Pheromon()
                         pheromone.start = actual
                         pheromone.end = next
-                        pheromone.phero = math.floor(divide / (graph[actual].edges[next2].move[0] + 1))
+                        pheromone.phero = math.floor(divide / (graph[actual].edges[find_next].move[0] + 1))
                         pheroToAdd.append(pheromone)
                         # new vertex
                         actual = next
@@ -220,19 +239,21 @@ def ant(graph, first):
                         for k in range(len(graph)):
                             if graph[k].start.times_used < graph[k].start.min:
                                 minOli = False
-                                break
-                            minOli = True
+                            else:
+                                minOli = True
                 else:
                     roads = False
             # add end
-            sequence = add_series_end(len(sequence), actual, graph, sequence)
+            sequence2 = add_series_end(len(sequence2), actual, graph, sequence2)
             # check if sequence is ok
-            if len(sequence) <= n:
-                if check_if_ok(graph, sequence) == True:
-                    okSeq.append(sequence)
-                else:
-                    print("erong: " + sequence)
-            sequence = []
+            if len(sequence2) <= n:
+                if check_if_ok(graph, sequence2) == True:
+                    okSeq.append(sequence2)
+                #else:
+                    #print("wrong: " + ''.join(sequence2))
+            #else:
+                #print("wrong2: " + ''.join(sequence2))
+            sequence2 = []
             for k in range(len(graph)):
                 graph[k].start.times_used = 0
         # add pheromone
@@ -250,17 +271,22 @@ def ant(graph, first):
                         graph[j].edges[k].pheromones = graph[j].edges[k].pheromones - par
         pheroToAdd = []
         firstCount = False
-    for i in range(len(okSeq)):
-        print("Sequence: ")
-        print(okSeq[i])
+    # for i in range(len(okSeq)):
+        # print("Sequence: ")
+        # print(okSeq[i])
 
 
 if __name__ == '__main__':
 
-    spectrum()
+    graph = spectrum()
     n = return_len_seq()
     sequence = return_seq()
     complementary()
     matrix()
+
+    start = time.clock()
+
     ant(graph, 0)
+
+    print("time: " + str(time.clock() - start))
     print("konice")
