@@ -149,8 +149,8 @@ def check_if_ok(spectrum, seq):
     if new_seq_correct == True:
         count2 += 1
         print(str(count2))
-        print("wygenerowana sekwencja: " + join_chain)
-        print("jakość dopasowania: " + '%.2f' % quality(seq) + " %")
+        print("Generated sequence: " + join_chain)
+        print("Quality of the match: " + '%.2f' % quality(seq) + " %")
         print()
         found = True
     # count2 += 1
@@ -406,4 +406,4 @@ if __name__ == '__main__':
 
     print ("time: " + str(time.clock() - start))
 
-    print("koniec")
+    print("end")

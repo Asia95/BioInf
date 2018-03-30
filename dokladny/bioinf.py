@@ -11,8 +11,6 @@ class Seq:
 
 missing = 0
 
-bledy = ['A', 'T', 'C', 'G']
-
 def find_first(spectrum):
     for o in range(len(spectrum)):
         if spectrum[o].first == 1:
@@ -80,6 +78,7 @@ def quality(seq):
 
 
 misteake = ['A','T','C','G']
+# permutations
 per = []
 per2 = []
 
@@ -386,7 +385,7 @@ def graph(before, actual, it, spec_matrix, spectrum, seq, missing):
         seq += frag
         if check_if_ok(spectrum, seq) is False:
             not_ok = True
-            # print("Wygenerował niepoprawną sekwencję1: ")
+            # print("Found wrong sequence: ")
             # for i in range(len(seq)):
             # print(seq)
         else:
@@ -399,7 +398,7 @@ def graph(before, actual, it, spec_matrix, spectrum, seq, missing):
         spectrum[index2].times_used += 1
 
         if check_if_ok(spectrum, seq) is False:
-            # print("Wygenerował niepoprawną sekwencję2: ")
+            # print("Found wrong sequence: ")
             # print(seq)
             seq = delete_series_end(tmp2, actual, spectrum, seq)
             if added_x == True:
@@ -470,4 +469,4 @@ if __name__ == '__main__':
 
     print ("time: " + str(time.clock() - start))
 
-    print("koniec")
+    print("end")
